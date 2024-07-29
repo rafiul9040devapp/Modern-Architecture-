@@ -1,12 +1,9 @@
 package com.rafiul.modernarchitectureapproach.repositories
 
 import com.rafiul.modernarchitectureapproach.model.ResponseUsers
-import com.rafiul.modernarchitectureapproach.services.UserService
-import retrofit2.Response
-import javax.inject.Inject
+import com.rafiul.modernarchitectureapproach.sealed.DataState
+import kotlinx.coroutines.flow.Flow
 
-class UserRepository @Inject constructor(private val userService: UserService) {
-    suspend fun getAllUserFromRepo(): Response<List<ResponseUsers>> {
-        return userService.getAllUsers()
-    }
+interface UserRepository  {
+    suspend fun getAllUserFromRepo(): Flow<DataState<List<ResponseUsers>>>
 }
