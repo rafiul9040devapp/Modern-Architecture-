@@ -10,10 +10,11 @@
         android:id="@+id/nameTV"
         android:textAllCaps="true"
         android:textColor="@color/black"
-        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/sakif" />
+        android:background="#E0E0E0"
+        android:text="" />
     <TextView
         android:id="@+id/emailTV"
         android:layout_marginTop="8dp"
@@ -21,8 +22,8 @@
         android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/sakif_gmail_com" />
-
+        android:background="#E0E0E0"
+        android:text="" />
     <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
         android:layout_height="4dp"

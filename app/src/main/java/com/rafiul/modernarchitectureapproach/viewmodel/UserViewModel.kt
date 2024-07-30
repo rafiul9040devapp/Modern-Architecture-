@@ -19,6 +19,9 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
     private val _userViewState = MutableStateFlow<UiState<List<ResponseUsers>>>(UiState.Loading)
     val userViewState: StateFlow<UiState<List<ResponseUsers>>> = _userViewState
 
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing
+
     init {
         getAllUserFromVM()
     }
@@ -26,27 +29,36 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
     private fun getAllUserFromVM() {
         viewModelScope.launch {
            userRepository.getAllUserFromRepo().collect{ state->
-               _userViewState.value = when(state){
-                  is DataState.Loading -> UiState.Loading
-                   is DataState.Error -> UiState.Error(state.exception.getUserFriendlyMessage())
-                   is DataState.Success -> UiState.Success(state.data)
-                   else -> UiState.Empty("Wait For A While......")
-               }
-
+               handleUiState(state)
            }
         }
     }
 
-//    private fun getAllUserFromVM() {
-//        viewModelScope.launch {
-//            _userViewState.value = DataState.Loading
-//            try {
-//                userRepository.getAllUserFromRepo().collect { state ->
-//                    _userViewState.value = state
-//                }
-//            } catch (e: Exception) {
-//                _userViewState.value = DataState.Error(e.toString())
-//            }
-//        }
-//    }
+    fun refreshUsers() {
+        _isRefreshing.value = true
+        viewModelScope.launch {
+            userRepository.getAllUserFromRepo().collect { state ->
+                _isRefreshing.value = false
+                handleUiState(state)
+            }
+        }
+    }
+
+    private fun handleUiState(state: DataState<List<ResponseUsers>>) {
+        _userViewState.value = when (state) {
+            is DataState.Loading -> UiState.Loading
+            is DataState.Error -> UiState.Error(state.exception.getUserFriendlyMessage())
+            is DataState.Success -> {
+                if (state.data.isEmpty()) {
+                    UiState.Empty("No users available")
+                } else {
+                    UiState.Success(state.data)
+                }
+            }
+            else -> UiState.Empty("Wait For A While......")
+        }
+    }
+
+
+
 }

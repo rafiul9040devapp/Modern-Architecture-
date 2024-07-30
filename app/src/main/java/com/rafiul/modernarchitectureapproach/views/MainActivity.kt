@@ -2,10 +2,10 @@ package com.rafiul.modernarchitectureapproach.views
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.rafiul.modernarchitectureapproach.adapters.ShimmerAdapter
 import com.rafiul.modernarchitectureapproach.adapters.UserAdapter
 import com.rafiul.modernarchitectureapproach.databinding.ActivityMainBinding
 import com.rafiul.modernarchitectureapproach.model.ResponseUsers
@@ -21,20 +21,42 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var userAdapter: UserAdapter
+    private lateinit var shimmerAdapter: ShimmerAdapter
     private val viewModel by viewModels<UserViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setUpAdapter()
+        setUpUserAdapter()
+        setUpShimmerAdapter()
+        swipeToRefresh()
+        observeRefreshState()
         setUpUserObserver()
     }
 
-    private fun setUpAdapter() {
+    private fun setUpShimmerAdapter() {
+        shimmerAdapter = ShimmerAdapter(15)
+        binding.shimmerRecyclerView.adapter = shimmerAdapter
+    }
+
+    private fun observeRefreshState() {
+        lifecycleScope.launch {
+            viewModel.isRefreshing.collect { isRefreshing ->
+                binding.swipeRefresh.isRefreshing = isRefreshing
+            }
+        }
+    }
+
+    private fun swipeToRefresh() {
+        binding.swipeRefresh.setOnRefreshListener {
+            viewModel.refreshUsers()
+        }
+    }
+
+    private fun setUpUserAdapter() {
         userAdapter = UserAdapter(object : UserAdapter.Listener {
             override fun getUserDetails(user: ResponseUsers) {
-//                Toast.makeText(this@MainActivity,"Want To see Details of : ${user.name}" , Toast.LENGTH_SHORT).show()
                 showToast("Want To see Details of : ${user.name}")
             }
         })
@@ -45,39 +67,70 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.userViewState.collect { state ->
                 when (state) {
-                    is UiState.Empty -> handlingState(state.message)
-                    is UiState.Error -> handlingState(state.errorMessage)
+                    is UiState.Empty -> handleState(state.message)
+                    is UiState.Error -> handleState(state.errorMessage)
                     UiState.Loading -> showLoading(true)
-                    is UiState.Success -> handlingState(state.data)
+                    is UiState.Success -> handleState(state.data)
                 }
             }
         }
     }
 
-    private inline fun <reified T> handlingState(data: T) {
+    private inline fun <reified T> handleState(data: T) {
         showLoading(false)
         with(binding) {
+            swipeRefresh.isRefreshing = false
             when (data) {
                 is String -> {
-                    tvUsername.visibility = View.VISIBLE
-                    tvUsername.text = data
+                    tvUsername.apply {
+                        visibility = View.VISIBLE
+                        text = data
+                    }
+                    userRec.visibility = View.GONE
+                    shimmerViewContainer.stopShimmer()
+                    shimmerViewContainer.visibility = View.GONE
                 }
-
                 is List<*> -> {
                     if (data.isNotEmpty() && data.first() is ResponseUsers) {
                         userAdapter.submitList(data as List<ResponseUsers>)
                         userRec.visibility = View.VISIBLE
+                        tvUsername.visibility = View.GONE
+                    } else {
+                        tvUsername.apply {
+                            visibility = View.VISIBLE
+                            text = "No users available"
+                        }
+                        userRec.visibility = View.GONE
                     }
+                    shimmerViewContainer.stopShimmer()
+                    shimmerViewContainer.visibility = View.GONE
                 }
-
                 else -> {
-
+                    tvUsername.visibility = View.GONE
+                    userRec.visibility = View.GONE
+                    shimmerViewContainer.stopShimmer()
+                    shimmerViewContainer.visibility = View.GONE
                 }
             }
         }
     }
 
     private fun showLoading(isLoading: Boolean) {
-        binding.progress.visibility = if (isLoading) View.VISIBLE else View.GONE
+        with(binding) {
+            if (isLoading) {
+                shimmerViewContainer.apply {
+                    startShimmer()
+                    visibility = View.VISIBLE
+                }
+                userRec.visibility = View.GONE
+                tvUsername.visibility = View.GONE
+            } else {
+                shimmerViewContainer.apply {
+                    stopShimmer()
+                    visibility = View.GONE
+                }
+            }
+        }
     }
+
 }
