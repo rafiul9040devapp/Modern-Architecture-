@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    android:layout_margin="4dp"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/nameTV"
+        android:textAllCaps="true"
+        android:textColor="@color/black"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sakif" />
+    <TextView
+        android:id="@+id/emailTV"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/black"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sakif_gmail_com" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginTop="4dp"/>
+</LinearLayout>

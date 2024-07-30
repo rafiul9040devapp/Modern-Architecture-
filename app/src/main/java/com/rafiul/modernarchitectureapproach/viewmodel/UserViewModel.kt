@@ -28,7 +28,7 @@ class UserViewModel @Inject constructor(private val userRepository: UserReposito
            userRepository.getAllUserFromRepo().collect{ state->
                _userViewState.value = when(state){
                   is DataState.Loading -> UiState.Loading
-                   is DataState.Error -> UiState.Error(state.exception)
+                   is DataState.Error -> UiState.Error(state.exception.getUserFriendlyMessage())
                    is DataState.Success -> UiState.Success(state.data)
                    else -> UiState.Empty("Wait For A While......")
                }

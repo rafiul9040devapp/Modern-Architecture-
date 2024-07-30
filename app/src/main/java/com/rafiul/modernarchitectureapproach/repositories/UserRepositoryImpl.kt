@@ -33,7 +33,7 @@ class UserRepositoryImpl @Inject constructor(private val api: UserApi) : UserRep
                 }else{
                     val errorBody = response.errorBody()?.string() ?: "Unknown Exception"
                     val appError = mapHttpError(response.code(), errorBody)
-                    emit(DataState.Error(appError.toString()))
+                    emit(DataState.Error(appError))
                 }
             } catch (e: Exception) {
                 val appError = when (e) {
@@ -41,7 +41,7 @@ class UserRepositoryImpl @Inject constructor(private val api: UserApi) : UserRep
                     is SocketTimeoutException -> AppError.TimeoutError
                     else -> AppError.UnknownError
                 }
-                emit(DataState.Error(appError.toString()))
+                emit(DataState.Error(appError))
             }
         }.retry(3) { throwable ->
             throwable is UnknownHostException || throwable is IOException
